@@ -12,15 +12,15 @@ class Settings(BaseSettings):
     )
 
     # API Configuration
-    swapi_api_url: str = "https://swapi.dev/api/"
+    SWAPI_URL: str = "https://swapi.dev/api/"
 
     # JWT Configuration
-    jwt_secret: str = "secret_key_test"
-    jwt_algorithm: str = "HS256"
+    JWT_SECRET: str = "secret_key_test"
+    JWT_ALGORITHM: str = "HS256"
 
     # Application Configuration
-    debug: bool = False
-    log_level: str = "INFO"
+    DEBUG: bool = False
+    LOG_LEVEL: str = "INFO"
 
 
 settings = Settings()
