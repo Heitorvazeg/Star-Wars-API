@@ -1,6 +1,6 @@
 import httpx
 from core.settings import settings
-from models.swapi_models import RESOURCE_VALID_FILTERS
+from app.models.swapi_models import RESOURCE_VALID_FILTERS
 from core.cache_in_memory import Cache
 import json
 
@@ -11,6 +11,14 @@ class SwapiService:
     def __init__(self, url: str = settings.SWAPI_URL, ttl: int = 300):
         self.url = url
         self.Cache = Cache(ttl=ttl)
+
+    # Call SWAPI and get data
+    async def fetchCall(self, client: httpx.AsyncClient, resource: str, paramsApi):
+        response = await client.get(f"{self.url}/{resource}/", params=paramsApi)
+        response.raise_for_status()
+        data = response.json()
+
+        return data
 
     async def fetch(self, resource: str, params: dict = None):
         # If there is cached data, returns it
@@ -40,11 +48,9 @@ class SwapiService:
 
         # Async call to SWAPI
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"{self.url}/{resource}/", params=paramsApi)
-            response.raise_for_status()
-            data = response.json()
+            data = await self.fetchCall(client, resource, paramsApi)
 
-        results = data
+        results = data.get("results", [])
 
         # Filtering the data by cleanParams, the filters allowed in the back
         if cleanParams and results:
@@ -62,6 +68,6 @@ class SwapiService:
             results = sorted(results, key=lambda x: x.get(sortBy, ""), reverse=False)
 
         # Set the cache data
-        self.Cache.set(cacheKey, cachedData)
+        self.Cache.set(cacheKey, results)
 
         return results
